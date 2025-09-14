@@ -5,21 +5,21 @@ import { EMA, RSI, MACD, BollingerBands } from "technicalindicators";
 
 export default function CurrencySignalBot() {
   const [pair, setPair] = useState("EURUSD");
-  const [duration, setDuration] = useState("3");  // 3 means 15m based on doc
+  const [duration, setDuration] = useState("3"); // 3 = 15m in AllTick docs
   const [signal, setSignal] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_KEY = "3ade87d28ce9f3ee310814492746fdcf-c-app";
-
-  // list of pairs + list of durations
+  // list of pairs
   const pairs = [
     { value: "EURUSD", label: "EUR/USD" },
     { value: "USDJPY", label: "USD/JPY" },
     { value: "GBPUSD", label: "GBP/USD" },
     { value: "AUDUSD", label: "AUD/USD" },
-    // add more as desired
+    { value: "USDCAD", label: "USD/CAD" },
+    { value: "NZDUSD", label: "NZD/USD" },
   ];
 
+  // list of durations
   const durations = [
     { value: "1", label: "1 Minute" },
     { value: "2", label: "5 Minutes" },
@@ -36,18 +36,8 @@ export default function CurrencySignalBot() {
     setLoading(true);
     setSignal("");
     try {
-      const queryObj = {
-        trace: `${pair}-${duration}-${Date.now()}`,
-        data: {
-          code: pair,
-          kline_type: parseInt(duration, 10),
-          kline_timestamp_end: 0,
-          query_kline_num: 200,
-          adjust_type: 0
-        }
-      };
-
-      const url = `http://localhost:5000/api/candles?pair=${pair}&duration=${duration}`;
+      // ✅ use Netlify function instead of localhost
+      const url = `/.netlify/functions/candles?pair=${pair}&duration=${duration}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
@@ -60,7 +50,7 @@ export default function CurrencySignalBot() {
       }
 
       const klineList = json.data.kline_list;
-      const closes = klineList.map(item => parseFloat(item.close_price));
+      const closes = klineList.map((item) => parseFloat(item.close_price));
 
       // Indicators
       const ema = EMA.calculate({ period: 14, values: closes });
@@ -71,12 +61,12 @@ export default function CurrencySignalBot() {
         slowPeriod: 26,
         signalPeriod: 9,
         SimpleMAOscillator: false,
-        SimpleMASignal: false
+        SimpleMASignal: false,
       });
       const bb = BollingerBands.calculate({
         period: 20,
         stdDev: 2,
-        values: closes
+        values: closes,
       });
 
       const lastClose = closes[closes.length - 1];
@@ -101,7 +91,6 @@ export default function CurrencySignalBot() {
       else if (score <= -2) final = "Sell";
 
       setSignal(final);
-
     } catch (err) {
       console.error("Fetch or processing error:", err);
       setSignal("Error fetching data");
@@ -115,15 +104,23 @@ export default function CurrencySignalBot() {
 
       <div style={{ margin: "10px 0" }}>
         <label>Pair: </label>
-        <select value={pair} onChange={e => setPair(e.target.value)}>
-          {pairs.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+        <select value={pair} onChange={(e) => setPair(e.target.value)}>
+          {pairs.map((p) => (
+            <option key={p.value} value={p.value}>
+              {p.label}
+            </option>
+          ))}
         </select>
       </div>
 
       <div style={{ margin: "10px 0" }}>
         <label>Duration: </label>
-        <select value={duration} onChange={e => setDuration(e.target.value)}>
-          {durations.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+        <select value={duration} onChange={(e) => setDuration(e.target.value)}>
+          {durations.map((d) => (
+            <option key={d.value} value={d.value}>
+              {d.label}
+            </option>
+          ))}
         </select>
       </div>
 
