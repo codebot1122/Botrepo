@@ -1,7 +1,6 @@
-// netlify/functions/candles.js
 import fetch from "node-fetch";
 
-export async function handler(event, context) {
+export async function handler(event) {
   try {
     const { pair, duration } = event.queryStringParameters;
 
@@ -18,9 +17,9 @@ export async function handler(event, context) {
       data: {
         code: pair,
         kline_type: parseInt(duration, 10),
-        kline_timestamp_end: "0",
-        query_kline_num: "200",
-        adjust_type: "0",
+        kline_timestamp_end: 0,
+        query_kline_num: 200,
+        adjust_type: 0,
       },
     };
 
@@ -36,10 +35,10 @@ export async function handler(event, context) {
       body: JSON.stringify(data),
     };
   } catch (err) {
-    console.error("Error in candles function:", err);
+    console.error("Serverless function error:", err);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Server error", details: err.message }),
+      body: JSON.stringify({ error: "Internal Server Error" }),
     };
   }
 }
