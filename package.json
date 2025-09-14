@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "create": "^0.5.5",
-    "node-fetch": "^3.3.2",
     "vite": "^7.1.5"
   }
 }
