@@ -5,21 +5,18 @@ import { EMA, RSI, MACD, BollingerBands } from "technicalindicators";
 
 export default function CurrencySignalBot() {
   const [pair, setPair] = useState("EURUSD");
-  const [duration, setDuration] = useState("3"); // 3 = 15m in AllTick docs
+  const [duration, setDuration] = useState("3"); // 3 means 15m based on doc
   const [signal, setSignal] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // list of pairs
+  // list of pairs + list of durations
   const pairs = [
     { value: "EURUSD", label: "EUR/USD" },
     { value: "USDJPY", label: "USD/JPY" },
     { value: "GBPUSD", label: "GBP/USD" },
     { value: "AUDUSD", label: "AUD/USD" },
-    { value: "USDCAD", label: "USD/CAD" },
-    { value: "NZDUSD", label: "NZD/USD" },
   ];
 
-  // list of durations
   const durations = [
     { value: "1", label: "1 Minute" },
     { value: "2", label: "5 Minutes" },
@@ -36,7 +33,7 @@ export default function CurrencySignalBot() {
     setLoading(true);
     setSignal("");
     try {
-      // ✅ use Netlify function instead of localhost
+      // call Netlify serverless function
       const url = `/.netlify/functions/candles?pair=${pair}&duration=${duration}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
